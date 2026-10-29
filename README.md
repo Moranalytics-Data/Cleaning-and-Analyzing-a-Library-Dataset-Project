@@ -1,4 +1,4 @@
-# Cleaning-and-Analyzing-a-Library-Dataset-Project
+# Cleaning and Analyzing a Library Dataset Project
 This project concerns two years of synthetic data for a fictious four-branch library system; it investigates the quality of that data, validates business rules, and identifies potential opportunities to improve inventory allocation across the system.
 
 ### Tools used
@@ -51,7 +51,7 @@ As irony would have it, the data’s most insidious and tenacious bit of dirtine
 
 In the process of converting the dataset’s various blank cells to NULLs for consistency’s sake, I discovered that the seemingly “blank cells” in the **Patrons** table, in fact, contained a hidden character.
 
-I would eventually determine the stowaway was a carriage return (`CHAR(13)`) and take the necessary steps to eradicate it (more details at the link below) — having been given in the process a good reminder that the naked eye is not always one’s best tool to spot elements that may make mischief with SQL’s computations.
+I would eventually determine the stowaway was a carriage return (`CHAR(13)`) and take the necessary steps to eradicate it (more details in the expandable section below) — having been given in the process a good reminder that the naked eye is not always one’s best tool to spot elements that may make mischief with SQL’s computations.
 
 <details>
   
@@ -59,7 +59,7 @@ I would eventually determine the stowaway was a carriage return (`CHAR(13)`) and
 
 ### Hidden characters
 
-I realized there was an issue when the following query on one such afflicted field, “StatusChangeDate” —
+I realized there was an issue when the following query on one such afflicted field, `StatusChangeDate` —
 
 ```sql
 UPDATE patrons
@@ -136,7 +136,7 @@ Which is to say, the Excel function —
 
 Ultimately, I decided that these capitalization inconsistencies were aesthetically unfortunate but would not have any functional negative effect and, therefore, were best left as-is, since any corrections I could apply to them would be, themselves, imperfect.
 
-That said, there were other title formatting issues that indeed could be successfully addressed, although not without some convolutions (see below.)
+That said, there were other title formatting issues that indeed could be successfully addressed, although not without some convolutions (see below).
 
 **Introductory articles**
 
@@ -150,7 +150,7 @@ For example, a title such as “The Wake Guide to Survival [Id: 24297]” would,
 
 Clearly, if the `Title` field was stuck with this intrusive ID tag — whose removal I had decided was unwise — it should at least be located at the end of the title, rather than within it. This meant, then, that the required modification would need to render the above example as “Wake Guide to Survival, The [Id: 24297]”, necessitating a more versatile SQL query strategy to make such an accommodation.
 
-Hesitant to embark upon such extensive modification on so many potential titles without preserving their original incarnation, I began by creating a “TitleName_Standardized” column in the **Titles** table.
+Hesitant to embark upon such extensive modification on so many potential titles without preserving their original incarnation, I began by creating a `TitleName_Standardized` column in the **Titles** table.
 
 I then applied the following query:
 
@@ -211,7 +211,7 @@ SET TitleName_Standardized =
 WHERE TitleName_Standardized LIKE 'The %';
 ```
 
-This query took any title beginning with “The” and either moved the article to the end of the title string after a comma (in the event there was no ID tag included in the title) or moved the article to the end of the title, after a comma but before the “[Id: XXXXX]” tag, in the event that such a tag was previously included in the title.
+This query took any title beginning with “The” and either moved the article to the end of the title string after a comma (in the event there was no ID tag included in the title) or moved the article to the end of the title, after a comma but before the “[Id: XXXXX]” tag, in the event that such a tag *was* previously included in the title.
 
 (The query was also designed to retain the title’s original capitalization formatting. As unfortunate as the circumstances are that prevent the correction of those titles that appear in either all-caps or all-lowercase [see capitalization section, above], creating new hybrids such as “farewell to arms, A” or “BELL JAR, The” would only add additional visual distraction to the mix.)
 
@@ -226,7 +226,7 @@ In addition to the text-level examples of “built-in dirtiness” discussed abo
 Examples included:​
 
 -  Some **Patrons** records indicated that they had registered before the age of five; other such records indicated a `RegistrationDate` preceding their `BirthYear` entirely.
--  Some **Checkouts** records indicated a ReturnDate before the respective `CheckoutDate`.
+-  Some **Checkouts** records indicated a `ReturnDate` before the respective `CheckoutDate`.
 -  Some **Holds** records included a `FulfilledDate` while the `Status` field still indicated the hold was “Active” (and not “Fulfilled”).
 -  Conversely, some “Fulfilled” holds were unaccompanied by a `Fulfilled Date`.
 -  Some **Inventory_transfer** records suggested a transfer being made from a branch to itself, or in a quantity of zero.
@@ -247,7 +247,7 @@ One of the more prominent business-rule issues was that of numerous improbable-u
 
 (In a follow-up discussion, Google Gemini would allow that it had failed to “enforce a floor [on the registration date] relative to the patron’s birth year — resulting in … time traveling patrons registering before being born.”)
 
-​Unfortunately, this was no minor error. Assuming — and this is arbitrary, of course, but seems plausible based on a sampling of actual libraries — a minimum patron age requirement of five years, our synthetic dataset is left with over 1,000 records with unacceptable conflicts between their patron `RegistrationDate`s and `BirthYears`.
+​Unfortunately, this was no minor error. Assuming — and this is arbitrary, of course, but seems plausible based on a sampling of actual libraries — a minimum patron age requirement of five years, our synthetic dataset is left with over 1,000 records with unacceptable conflicts between their patron `RegistrationDate`s and `BirthYear`s.
 
 Of course, in a real-world scenario, one would want to investigate the source of such a chronic error, hopeful in particular to determine if the cause originates specifically with one field or the other. (In such a scenario, naturally, one would not only be seeking to fix the problem in order to preclude further such errors but also hoping perhaps to rehabilitate the flawed past data to whatever degree possible.)
 
@@ -259,9 +259,9 @@ Of course, in a real-world scenario, one would want to investigate the source of
 
 **ReturnDate < CheckoutDate**
 
-Another example of impossibly timed events occurred in the **Checkouts table**, which saw instances of its `ReturnDate` field pre-dating its respective `CheckoutDate` field.
+Another example of impossibly timed events occurred in the **Checkouts** table, which saw instances of its `ReturnDate` field pre-dating its respective `CheckoutDate` field.
 
-Of the approximately 250,000 records in the *Checkouts* table, this anomaly appeared in about 7,400 instances — just slightly less than 3% of the time.
+Of the approximately 250,000 records in the **Checkouts** table, this anomaly appeared in about 7,400 instances — just slightly less than 3% of the time.
 
 A profile of this phenomenon showed that, in every instance of a `ReturnDate` preceding the `CheckoutDate`, the amount of time separating the two dates ranged from one day to a maximum of 30 days. A count of the numbers of occurrences for each span (one day, two days, three days, etc.) showed them to be roughly approximate to one another, suggesting no pattern but for the fact none was longer than a month.
 
@@ -285,7 +285,7 @@ Eventually, however, I realized that it was precisely the 30-day maximum that ar
 
 In a real-world situation, of course, one would want to pursue whatever additional avenues might be available — presumably engaging with the manufacturer of the relevant software for their input, for one. (A major question being, naturally, which of the two dates, return or checkout, was at issue — or if it was possible there were alternating failures between the two.)
 
-In the case of this report, I resolved that the number of records was significant enough that I did not want to lose the non-date-related information that they contained otherwise, and I therefore decided not to eliminate them. Rather, I made a note to myself that any date-related calculations should include a criterion eliminating any instance WHERE ReturnDate <= CheckoutDate.
+In the case of this report, I resolved that the number of records was significant enough that I did not want to lose the non-date-related information that they contained otherwise, and I therefore decided not to eliminate them. Rather, I made a note to myself that any date-related calculations should include a criterion eliminating any instance `WHERE ReturnDate <= CheckoutDate`.
 
 **FulfilledDate + “Active” status**
 
@@ -293,7 +293,7 @@ A not dissimilar disconnect appeared in the **Holds** table. Among this table’
 
 In theory, those records with a date in the `FulfilledDate` field should have a corresponding `HoldStatus` of “Fulfilled.” (In turn, those records with a `HoldStatus` of “Active” would be expected to have a blank in the `FulfilledDate` field.)
 
-However, a small handful of 2023 records — roughly 300 out of approximately 16,500 — showed a status of “Active” despite the record having a non-blank FulfilledDate. (No such instances of this anomaly appear in 2024.)
+However, a small handful of 2023 records — roughly 300 out of approximately 16,500 — showed a status of “Active” despite the record having a non-blank `FulfilledDate`. (No such instances of this anomaly appear in 2024.)
 
 As with the previously described issue with return dates preceding checkout dates, I tracked this glitch over time and found that the frequency of its occurrence roughly conformed to overall-checkout frequency for the same period. Similarly, this phenomenon did not occur at any branch or branches in numbers that were out of keeping with similar overall-checkout ratios.
 
@@ -323,7 +323,7 @@ I found nine such instances: two on the same day; four in which the glitch prece
 
 This is another 2023-centric issue. Of the approximately 3,000 transfers that occurred that year, there were roughly 60 instances in which the `Quantity` of the transfer — i.e., the number of copies transferred — was listed as zero.
 
-While the per-branch totals of such instances did not correlate with each branch’s overall checkout figures, said totals were so small (none over 20) as to render such an imbalance statistically insignificant. (For what it was worth, overall per-month glitch totals across the branches did correlate with regular overall checkout figures.)
+While the per-branch totals of such instances did not correlate with each branch’s overall checkout figures, said totals were so small (none over 20) as to render such an imbalance statistically insignificant. (For what it was worth, overall per-month glitch totals across the branches *did* correlate with regular overall checkout figures.)
 
 I ran a similar test to see if there was any notable timing proximity between instances of “zero quantity” transfers and regular transfers of the same title: Six such instances of occurrences within 31 days were noted — too few to infer any sort of connection.
 
@@ -351,9 +351,14 @@ I applied three criteria to determine titles that a branch might want to conside
 
 <details>
 
-<summary>Full “additional purchase” SQL</summary>
+<summary>Full “additional purchase” SQL
 
-As noted — minus any real-world purchasing rules that would guide us in an actual library system — here we will use arbitrarily selected criteria: A title in need of purchase must have—​
+</summary>
+
+<br>
+As noted — minus any real-world purchasing rules that would guide us in an actual library system — here we will use arbitrarily selected criteria: A title in need of purchase must have:
+
+<!-- -->
 
 -  a turnover ratio (i.e., checkouts / branch inventory) of at least 10.0;
 -  a hold request in the past three months; and
@@ -399,8 +404,6 @@ ORDER BY
 
 Running this query sparks some interesting observations. For one, no titles are returned in the results for Branch 4. (This would suggest that it would be helpful to modify this query for individual branch use, so that the turnover-ratio criterion could be adjusted separately as need be: An example of an individual such query appears in the SQL section of this report.)
 
-As to these particular results, though — as noted in the main report — Branch 4 (our North Hills Branch) returns zero titles, while Branch 2 (Riverside) returns 12. By contrast, our remaining branches, Downtown and College District, return 236 and 180 titles, respectively.
-
 (A related, more basic version of this query — to simply count number of titles per branch with a turnover ratio of 10 or over — highlights the disparity even more: Branch 1 & 3 each have over 1,000 such titles, as compared to Branch 2 & 4, which each have under 200.)
   
 </details>
@@ -421,6 +424,8 @@ Again, an arbitrary standard was applied here — i.e., any branch with more tha
 <details>
   
 <summary>Full “weeding” SQL</summary>  
+
+<br>
 
 The following query determines those titles at each branch that (a) have not been checked out in the past 18 months and (b) have more than two copies in inventory.
 
@@ -464,6 +469,8 @@ Of course, the number of titles recommended for transfer increases as the size o
 <details>
 
 <summary>Full “transfer” SQL​</summary>
+
+<br>
 
 The following query determines disparities between branches based on turnover ratios:​
 
@@ -536,21 +543,23 @@ This is an additional example of where the Downtown and College District branche
 
 **Recommendation 3: As noted earlier, it would be of potential benefit for the respective branches to compare their purchasing strategies to see if — in this instance, for example, as with the aforementioned issue of additional purchasing needs — Branches 1 & 3 might benefit from applying any of their peers’ approaches in these areas.**
 
-​**(Again, as noted with previous recommendations, a real-world scenario would assuredly need to apply a variety of other logistical considerations, as well, in addition to simply this analytic formula.)**
+**(Again, as noted with previous recommendations, a real-world scenario would assuredly need to apply a variety of other logistical considerations as well, in addition to a single analytic formula such as this.)**
 
 ### 4. Are popular system-wide titles missing from some branches?
 
-I identified 131 titles with at least 31 checkouts across the system — i.e., our fictitious small town’s most popular books for the years 2023 & 2024. Notably, Branches 2 & 4 (i.e., the Riverside and North Hills branches) were far more likely to not have, in their respective inventories, copies of the system’s “top” books.​
+I identified 131 titles\* with at least 31 checkouts across the system — i.e., our fictitious small town’s most popular books for the years 2023 & 2024. Notably, Branches 2 & 4 (i.e., the Riverside and North Hills branches) were far more likely to *not* have, in their respective inventories, copies of the system’s “top” books.​
 
 Whereas we would not expect any given branch’s list of most popular books to be a carbon copy of another, it is still striking that the North Hills branch (Branch 4) did not have in its inventory over *half* of these top 131 books, while the Riverside branch (Branch 2) did not possess any copies of 30% of them.​
 
-Meanwhile, the Downtown branch (Branch 1) had all but five of these titles in their inventory, while the College District branch (Branch 3) had all but *two*.​
+Meanwhile, the Downtown branch (Branch 1) had all but five of these titles in its inventory, while the College District branch (Branch 3) had all but *two*.​
 
 A check into whether patrons at these latter two branches were submitting hold requests for these titles indicated only one such instance of a hold being placed on any such book by a patron of a branch not currently stocking it.​​
 
 <details>
 
 <summary>Full “missing” SQL​</summary>
+
+<br>
 
 This query determines instances of patrons requesting holds on popular titles not available at their own branch:​
 
@@ -593,6 +602,8 @@ Another possibility is the “out of sight, out of mind” argument — i.e., th
 
 **Recommendation 4: A program in which each month’s most popular books system-wide be featured in promotional material (on prominent bulletin boards, e.g.) in those branches not currently stocking said titles — with encouragement that patrons submit requests if interested. If no such interest is demonstrated on a significant level, we can lean further towards an interpretation that Branches 2 & 4 are indeed simply very adept at forecasting their patrons’ inclinations.**
 
+\* *This began, more naturally, as a “Top 100” list, but that cutoff would have required an arbitrary removal of some titles, as the minimum standard for inclusion on the list was a checkout count of at least 31. (A cutoff of 32 would have produced fewer than 100 titles. \[The highest number of total checkouts, by way of context, was 43.\]) Including all such 31-checkout books inflated the “Top 100” list to 131 titles.*
+
 ### Recommendations overview
 
 Interestingly, the system’s branches divide very neatly into pairs, each of which appears to have its own respective long & short suits.​
@@ -626,7 +637,7 @@ Examples — fuller explorations of which appear at the link below — included:
 
 <summary>Synthetic data issues in detail</summary>
 
-**Limitations**
+### Synthetic data issues in detail
 
 Overly regular results are not, of course, inherently a side-effect of all synthetic data, but it is certainly a common way that inadequately complex systems will reveal their limitations. A case in point, for example, was my analysis into what sort of seasonal variations we might see among the genres across the dataset’s two-year time period. (An October bump in the horror section, perhaps, one might whimsically speculate?)
 
@@ -635,6 +646,8 @@ As can be seen below — although the data are, at least, sophisticated enough t
 <p align="center">
   <img src="IMAGES/Checkouts over Time by Genre.png" width="1000">
 </p>
+
+Our overall figures model a very similar shape:
 
 <p align="center">
   <img src="IMAGES/Total Checkouts over Time.png" width="500">
@@ -656,9 +669,9 @@ An attempt to analyze the patrons’ age breakdown by branches, for example, to 
   <img src="IMAGES/Age Breakdown _ Branch 1 to 4.png" width="750">
 </p>
 
-*A note here, to bring full circle an earlier discussion — from the section about violations in the dataset’s business logic — about records that had to be excluded from certain analyses because their respective `RegistrationDate`s and `BirthYear`s were, in conjunction with one another, either illogical or impossible: These records can be see reflected — in the charts above and in a discussion below about patrons’ lengths of membership — by the category labeled “Invalid.”*
+*A note here, to bring full circle an earlier discussion — from the section about violations in the dataset’s business logic — about records that had to be excluded from certain analyses because their respective* `RegistrationDate`*s and* `BirthYear`*s were, in conjunction with one another, either illogical or impossible: These records can be see reflected — in the charts above and in a discussion below about patrons’ lengths of membership — by the category labeled “Invalid.”*
 
-​*Note also that this is distinct from another category seen above, “Unknown,” in which the `BirthYear` was either not listed, listed as 1800 or 1900, or listed as -1. The “Invalid” category, by comparison, describes those records in which it is impossible to determine whether it is the `RegistrationDate` or the `BirthYear` that is in error (only that both cannot be correct).*
+​*Note also that this is distinct from another category seen above, “Unknown,” in which the* `BirthYear` *was either not listed, listed as 1800 or 1900, or listed as -1. The “Invalid” category, by comparison, describes those records in which it is impossible to determine whether it is the* `RegistrationDate` *or the* `BirthYear` *that is in error (only that both cannot be correct).*
 
 The charts above also hint at another disappointing bit of statistical monotony, i.e., that all of the branches’ overall membership totals are within 150 patrons of one another. (3658, 3794, 3733, and 3700 at Branches 1 through 4, respectively.)
 
@@ -673,7 +686,7 @@ Other checkout-behavior analyses garnered similarly beige results. A study of ov
 
 Combining these various elements only produces further undistinguished findings — i.e., no particular age group more or less likely to return books late, nor any such peaks or valleys among patrons as classified by length of library membership.
 
-​Likewise, an investigation into which genre is favored by each age group produced equally homogenous results (the undisputed favorite in every age range, from 10 & Under to Over 80: Mystery/Thriller), highlighting yet another area in which the synthetic-data design has divvied the population up into all-but-equivalent subdivisions.
+​Likewise, an investigation into which genre is favored by each age group produced equally homogenous results (the undisputed favorite in every age range, from 10 & Under to Over 80: Mystery/Thriller), highlighting yet another area in which the synthetic-data design has divvied the population up into all-but-equivalent pie pieces.
 
 ​Similarly oversmooth findings result from an analysis of branches’ respective inventories in terms of title age. (Because the dataset does not contain information about titles’ purchase dates, here we are treating publication date as an equivalent.) The chart below presents an almost comically robotized breakdown in inventories by title-age range:
 
@@ -693,7 +706,7 @@ The analyses here, then, were only a very small handful of possible approaches t
 
 ### What I’ve learned
 
-This report has chronicled at length the potential hazards of employing synthetic data for the purposes to which they have been put here. Also noted has been the valuable lesson that an open-ended analytical exploration, by its nature — in fact, by its very name — runs the risk of lacking a clear endpoint: The author comes away from this endeavor with a greater understanding of the importance of some guardrails, even within a looser framework.​
+This report has chronicled at length the potential hazards of employing synthetic data for the purposes to which they have been put here. Also noted has been the valuable lesson that an open-ended analytical exploration, by its nature — in fact, by its very name — runs the risk of lacking a clear endpoint: The author comes away from this endeavor with a greater understanding of the importance of *some* guardrails, even within a looser framework.​
 
 I was also grateful for the opportunity to apply certain business-rule validations to the data at hand: I gained a better appreciation for the sort of causal relationships that can exist between fields — i.e., how data can be ostensibly “clean” when evaluated solely against itself, but potentially problematic when interacting illogically with other, related data (e.g., patrons returning books before checking them out or — in a far more extreme example — obtaining library cards literally before they were born).
 
