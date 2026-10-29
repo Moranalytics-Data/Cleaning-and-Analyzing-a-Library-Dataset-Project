@@ -51,7 +51,7 @@ As irony would have it, the data’s most insidious and tenacious bit of dirtine
 
 In the process of converting the dataset’s various blank cells to NULLs for consistency’s sake, I discovered that the seemingly “blank cells” in the **Patrons** table, in fact, contained a hidden character.
 
-I would eventually determine the stowaway was a carriage return (CHAR(13)) and take the necessary steps to eradicate it (more details at the link below) — having been given in the process a good reminder that the naked eye is not always one’s best tool to spot elements that may make mischief with SQL’s computations.
+I would eventually determine the stowaway was a carriage return (`CHAR(13)`) and take the necessary steps to eradicate it (more details at the link below) — having been given in the process a good reminder that the naked eye is not always one’s best tool to spot elements that may make mischief with SQL’s computations.
 
 <details>
   
@@ -73,14 +73,14 @@ This investigatory query —
 
 ```sql
 SELECT StatusChangeDate,
-LENGTH(StatusChangeDate),
-HEX(StatusChangeDate)
+       LENGTH(StatusChangeDate),
+       HEX(StatusChangeDate)
 FROM patrons
 WHERE LENGTH(StatusChangeDate) = 1
 LIMIT 10;
 ```
 
-— would elicit that the stubborn culprit was a carriage return, aka CHAR(13). Having made this determination, the following cleansing process was applied:
+— would elicit that the stubborn culprit was a carriage return, aka `CHAR(13)`. Having made this determination, the following cleansing process was applied:
 
 ```sql
 UPDATE patrons
@@ -94,9 +94,9 @@ WHERE TRIM(REPLACE(StatusChangeDate, CHAR(13), '')) = '';
 
 **An unwanted barnacle**
 
-The Titles table contained a more complex issue. Despite a uniqueness check to confirm all 24,763 Title entries were indeed distinct strings, I discovered that there were, in fact, numerous instances of duplicate titles distinguished only by the inclusion of their “TitleID” within the Title field, itself. (For example, instead of “Dune”, the entry would read “Dune [Id: 20234]”. But there were also lookalikes along the lines of “Dune [Id: 10353]”, “Dune [Id:3153]”, etc.)
+The **Titles** table contained a more complex issue. Despite a uniqueness check to confirm all 24,763 `Title` entries were indeed distinct strings, I discovered that there were, in fact, numerous instances of duplicate titles distinguished only by the inclusion of their “TitleID” within the `Title` field, itself. (For example, instead of “Dune”, the entry would read “Dune [Id: 20234]”. But there were also lookalikes along the lines of “Dune [Id: 10353]”, “Dune [Id:3153]”, etc.)
 
-​My first instinct was remove these intrusions, until I realized that doing so would result in hundreds of duplicate-title groups containing titles that the system was otherwise treating as distinct entities. (To clarify: These were not intended as identifiers of multiple copies of the same title; the system was treating them as separate titles – an unfortunate side effect of the Python script’s limited ability to create the necessary number of unique items.)
+​My first instinct was remove these intrusions, until I realized that doing so would result in hundreds of duplicate-title groups containing titles that the system was otherwise treating as distinct entities. (To clarify: These were not intended as identifiers of multiple copies of the same title; the system was treating them as *separate* titles – an unfortunate side effect of the Python script’s limited ability to create the necessary number of unique items.)
 
 Ultimately, to maintain the system’s functionality, I decided it was necessary to preserve the ID tags’ inclusion within the title names (and accept that, within this synthetic reality, “Dune [Id: 3153]” and “Dune [Id: 20234]” were two different books).
 
@@ -281,7 +281,7 @@ Nor was there any indication that these anomalies occurred more frequently at an
 
 ​The fact that the number of days separating the two dates was always fewer than 30 days initially tempted me to wonder if perhaps the “glitch” was a mere case of these `ReturnDate`s being somehow backdated a month. (Or the `CheckoutDate`s foredated the same amount.)
 
-Eventually, however, I realized that it was precisely the 30-day maximum that argued against this theory, since — were one to add one month to each of the otherwise impossibly dated `ReturnDate`s — the resulting corrected dates would, in every single instance, depict the title being returned within 30 days … very much not in keeping with typical patron behavior, which commonly sees returns past the 30-day mark (instances of up to 80 days after checkout being not unheard of).
+Eventually, however, I realized that it was precisely the 30-day maximum that argued *against* this theory, since — were one to add one month to each of the otherwise impossibly dated `ReturnDate`s — the resulting corrected dates would, in every single instance, depict the title being returned within 30 days … very much *not* in keeping with typical patron behavior, which commonly sees returns past the 30-day mark (instances of up to 80 days after checkout being not unheard of).
 
 In a real-world situation, of course, one would want to pursue whatever additional avenues might be available — presumably engaging with the manufacturer of the relevant software for their input, for one. (A major question being, naturally, which of the two dates, return or checkout, was at issue — or if it was possible there were alternating failures between the two.)
 
@@ -291,7 +291,7 @@ In the case of this report, I resolved that the number of records was significan
 
 A not dissimilar disconnect appeared in the **Holds** table. Among this table’s fields are `HoldStatus` — whose options are “Active,” “Fulfilled,” and “Cancelled” — and a `FulfilledDate`.
 
-In theory, those records with a date in the `FulfilledDate` field should have a corresponding `HoldStatus` of “Fulfilled.” (In turn, those records with a HoldStatus of “Active” would be expected to have a blank in the `FulfilledDate` field.)
+In theory, those records with a date in the `FulfilledDate` field should have a corresponding `HoldStatus` of “Fulfilled.” (In turn, those records with a `HoldStatus` of “Active” would be expected to have a blank in the `FulfilledDate` field.)
 
 However, a small handful of 2023 records — roughly 300 out of approximately 16,500 — showed a status of “Active” despite the record having a non-blank FulfilledDate. (No such instances of this anomaly appear in 2024.)
 
@@ -333,19 +333,19 @@ Being that there were approximately the same number of these glitches as there w
 
 ### An important structural limitation
 
-The most significant business-rule issue to be found in this dataset was not intentionally injected by Gemini’s Python script. Instead, it is a legitimate and significant failing: There is no causal connection between the Holds and Checkouts tables.
+The most significant business-rule issue to be found in this dataset was not intentionally injected by Gemini’s Python script. Instead, it is a legitimate and significant failing: There is no causal connection between the **Holds** and **Checkouts** tables.
 
-Whereas one might reasonably expect a title whose hold status appears as “Fulfilled” to soon thereafter appear as a checkout in the Checkouts table, this is not the case. Disappointingly, Google Gemini’s Python script did not account for this necessary relationship.
+Whereas one might reasonably expect a title whose hold status appears as “Fulfilled” to soon thereafter appear as a checkout in the **Checkouts** table, this is not the case. Disappointingly, Google Gemini’s Python script did not account for this necessary relationship.
 
-Accordingly, the Holds table is largely an outlier in this project and has been invoked in only a single instance — one in which the Holds -> Checkouts cause-and-effect breakdown is moot. (See Question 4 below, “Are popular system-wide titles missing from some branches?,” in which the Holds table is consulted to determine whether patron interest exists for certain titles.)
+Accordingly, the **Holds** table is largely an outlier in this project and has been invoked in only a single instance — one in which the **Holds** -> **Checkouts** cause-and-effect breakdown is moot. (See Question 4 below, “Are popular system-wide titles missing from some branches?,” in which the **Holds** table is consulted to determine whether patron interest exists for certain titles.)
 
 ### Inventory analysis / Recommendations  • Four exploratory questions
 
 An inventory analysis determined some clear differentiations separating the branches into two distinct pairs: Branches 1 & 3 on the one hand (the Downtown and College District branches), and Branches 2 & 4 on the other (the Riverside and North Hills branches). As noted before, these distinctions would be highlighted across four primary questions.
 
-Of course, any real-world library system or even individual branch would have its own proprietary algorithms to make decisions in such areas as purchasing, transferring, and weeding. I am, for the sake of this “synthetic system,” selecting arbitrary criteria for the inquiries that follow.
+*Of course, any real-world library system or even individual branch would have its own proprietary algorithms to make decisions in such areas as purchasing, transferring, and weeding. I am, for the sake of this “synthetic system,” selecting arbitrary criteria for the inquiries that follow.*
 
-**1. What existing titles might warrant additional purchase?**
+### 1. What existing titles might warrant additional purchase?
 
 I applied three criteria to determine titles that a branch might want to consider making additional purchases of: a turnover ratio (i.e., checkouts / branch inventory) of at least 10.0; a hold request in the past three months; and no copies at any other branch.
 
@@ -405,7 +405,16 @@ As to these particular results, though — as noted in the main report — Branc
   
 </details>
 
-**2. What titles are potential candidates for weeding?**
+Evaluated by these standards, Branches 1 & 3 – our Downtown and College District branches – return 236 and 180 titles, respectively, while Branch 2 (Riverside) returns 12 and Branch 4 (North Hills) returns zero titles.
+
+​Tempting, then, to think that Branches 2 & 4 are making superior purchasing decisions, such that they have so few instances of titles seemingly in need of supplementing in their respective inventories.
+
+**Recommendation 1: As noted previously, real-world recommendations would need to take into account such other factors as budget, replacement costs, current title availability, and branch-specific purchasing policies — i.e., details that fall outside the scope of our synthetic data.**
+
+​**That said — within the boundaries of our synthetically generated library system — a recommendation would be made that a review be undertaken of each branch’s respective purchasing policies, specifically with an eye towards any particular practices that distinguish the Riverside and North Hills branches (Branches 2 & 4) from the Downtown and College District branches (Branches 1 & 3), to see if there are approaches that the latter might find worthy of incorporating into their own procedures.**
+
+
+### 2. What titles are potential candidates for weeding?
 
 Again, an arbitrary standard was applied here — i.e., any branch with more than two copies of a title not checked out in the past 18 months would be encouraged to make it available to any other interested branch and, otherwise, consider removing it from its inventory. (Older titles would be prioritized for such removal first.)​
 
@@ -442,11 +451,11 @@ ORDER BY t.publicationyear ASC;
 
 Interestingly, these results show a flipside to the aforementioned distinction between the Downtown and College District branches (i.e., Branches 1 & 3) and the Riverside and North Hills branches (2 & 4).
 
-In terms of titles meeting the above criteria, Riverside and North Hills have 24 and 127 titles, respectively, while the remaining branches have only a single such title apiece. This would suggest that Branches 1 & 3 are the superior stewards in the art of keeping their shelves free of idle materials.
+In terms of titles meeting the above criteria, Riverside and North Hills have 24 and 127 titles, respectively, while the remaining branches have only a *single* such title apiece. This would suggest that Branches 1 & 3 are the superior stewards in the art of keeping their shelves free of idle materials.
 
-Recommendation: Again, real-world considerations would of course include other factors such as whether a title was part of collection requirement. Within our system, though, we would propose that Branches 2 & 4 should consider possible removal of the older titles flagged by the above analysis and, as well, potentially consult with Branches 1 & 3 to see if any of their weeding strategies could be beneficially applied system-wide.
+**Recommendation 2: Again, real-world considerations would of course include other factors such as whether a title was part of collection requirement. Within our system, though, we would propose that Branches 2 & 4 should consider possible removal of the older titles flagged by the above analysis and, as well, potentially consult with Branches 1 & 3 to see if any of their weeding strategies could be beneficially applied system-wide.**
 
-**3. Where might transfers better align branches’ inventory with demand?**
+### 3. Where might transfers better align branches’ inventory with demand?
 
 To make determinations in this area, I generated turnover ratios (i.e., checkouts divided by inventory) for each title, then sought those instances with the greatest disparity in those ratios between two branches sharing said title.​
 
@@ -525,17 +534,17 @@ A review of these results suggests that Branches 1 & 3 are, with a single except
 
 This is an additional example of where the Downtown and College District branches have been less successful at maintaining inventory rosters of potential interest to their patrons. (In addition to their having a greater number of titles in potential need for additional purchase, as compared to the Riverside and North Hill branches.)​
 
-**Recommendation: As noted earlier, it would be of potential benefit for the respective branches to compare their purchasing strategies to see if — in this instance, for example, as with the aforementioned issue of additional purchasing needs — Branches 1 & 3 might benefit from applying any of their peers’ approaches in these areas.**
+**Recommendation 3: As noted earlier, it would be of potential benefit for the respective branches to compare their purchasing strategies to see if — in this instance, for example, as with the aforementioned issue of additional purchasing needs — Branches 1 & 3 might benefit from applying any of their peers’ approaches in these areas.**
 
-​(Again, as noted with previous recommendations, a real-world scenario would assuredly need to apply a variety of other logistical considerations, as well, in addition to simply this analytic formula.)
+​**(Again, as noted with previous recommendations, a real-world scenario would assuredly need to apply a variety of other logistical considerations, as well, in addition to simply this analytic formula.)**
 
-**4. Are popular system-wide titles missing from some branches?**
+### 4. Are popular system-wide titles missing from some branches?
 
 I identified 131 titles with at least 31 checkouts across the system — i.e., our fictitious small town’s most popular books for the years 2023 & 2024. Notably, Branches 2 & 4 (i.e., the Riverside and North Hills branches) were far more likely to not have, in their respective inventories, copies of the system’s “top” books.​
 
-Whereas we would not expect any given branch’s list of most popular books to be a carbon copy of another, it is still striking that the North Hills branch (Branch 4) did not have in its inventory over half of these top 131 books, while the Riverside branch (Branch 2) did not possess any copies of 30% of them.​
+Whereas we would not expect any given branch’s list of most popular books to be a carbon copy of another, it is still striking that the North Hills branch (Branch 4) did not have in its inventory over *half* of these top 131 books, while the Riverside branch (Branch 2) did not possess any copies of 30% of them.​
 
-Meanwhile, the Downtown branch (Branch 1) had all but five of these titles in their inventory, while the College District branch (Branch 3) had all but two.​
+Meanwhile, the Downtown branch (Branch 1) had all but five of these titles in their inventory, while the College District branch (Branch 3) had all but *two*.​
 
 A check into whether patrons at these latter two branches were submitting hold requests for these titles indicated only one such instance of a hold being placed on any such book by a patron of a branch not currently stocking it.​​
 
@@ -574,6 +583,7 @@ WHERE NOT EXISTS
     )
 GROUP BY tb.titleID, t.titlename_standardized, b.branchID
 ORDER BY titleID ASC;
+```
 
 </details>
 
@@ -581,9 +591,9 @@ ORDER BY titleID ASC;
 
 Another possibility is the “out of sight, out of mind” argument — i.e., that the patrons’ lack of interest in these titles (clearly very popular at the system’s other branches) may have been due to simple ignorance of their existence.​
 
-**Recommendation: A program in which each month’s most popular books system-wide be featured in promotional material (on prominent bulletin boards, e.g.) in those branches not currently stocking said titles — with encouragement that patrons submit requests if interested. If no such interest is demonstrated on a significant level, we can lean further towards an interpretation that Branches 2 & 4 are indeed simply very adept at forecasting their patrons’ inclinations.**
+**Recommendation 4: A program in which each month’s most popular books system-wide be featured in promotional material (on prominent bulletin boards, e.g.) in those branches not currently stocking said titles — with encouragement that patrons submit requests if interested. If no such interest is demonstrated on a significant level, we can lean further towards an interpretation that Branches 2 & 4 are indeed simply very adept at forecasting their patrons’ inclinations.**
 
-**Recommendations overview**
+### Recommendations overview
 
 Interestingly, the system’s branches divide very neatly into pairs, each of which appears to have its own respective long & short suits.​
 
@@ -597,7 +607,7 @@ Viewed through a glass-is-half-full perspective, this project’s synthetic data
 
 The downside, of course, was *what* my analyses determined — i.e., the various ways, time & time again, in which this particular dataset behaved in conspicuously *non*-real-world ways.​
 
-A lack of causal connectivity between Holds and Checkouts tables was noted earlier. Other, less serious issues included the fact that every branch-to-branch transfer recorded in the Inventory_transfer table was, in each instance, that of a single, solitary book — an impossibly impractical bit of logistics.​
+A lack of causal connectivity between **Holds** and **Checkouts** tables was noted earlier. Other, less serious issues included the fact that every branch-to-branch transfer recorded in the **Inventory_transfer** table was, in each instance, that of a single, solitary book — an impossibly impractical bit of logistics.​
 
 However, the most common drawbacks to this dataset were not so much errors as repeated findings of excessive *regularity*.​
 
@@ -612,7 +622,68 @@ Examples — fuller explorations of which appear at the link below — included:
 -  Little distinction in genre preferences across different age groups
 -  Branch inventory percentages by title age largely identical​​​​
 
-​​Synthetic data issues in detail
+<details>
+
+<summary>Synthetic data issues in detail</summary>
+
+**Limitations**
+
+Overly regular results are not, of course, inherently a side-effect of all synthetic data, but it is certainly a common way that inadequately complex systems will reveal their limitations. A case in point, for example, was my analysis into what sort of seasonal variations we might see among the genres across the dataset’s two-year time period. (An October bump in the horror section, perhaps, one might whimsically speculate?)
+
+As can be seen below — although the data are, at least, sophisticated enough to reflect different levels of popularity among the genres — it is not so nuanced as to suggest that each’s behavior over time is anything other than a variation on the system’s overall checkout levels.
+
+<p align="center">
+  <img src="IMAGES/Checkouts over Time by Genre.png" width="1000">
+</p>
+
+<p align="center">
+  <img src="IMAGES/Total Checkouts over Time.png" width="500">
+</p>
+
+
+Similarly — although it is not unreasonable to think that seasonal fluctuations in checkout activity might repeat themselves from year to year — one might hope that the conformity between 2023 and 2024 be a *bit* less slavish:
+
+<p align="center">
+  <img src="IMAGES/Total Checkouts over Time _ 2023 v 2024.png" width="750">
+</p>
+
+
+In a similar vein, I was dismayed to find virtually all of my patrons-based analyses reaching the same conclusion — i.e., that the library system that Google Gemini had created might as well have been located in the fictitious town of Stepford (so lockstep were its residents’ behaviors with one another).
+
+An attempt to analyze the patrons’ age breakdown by branches, for example, to see if the results might have anything interesting to tell us about each branch’s respective user demographics, showed only that — while the data at least differentiated among the various age ranges in terms of overall patron population totals — those shades of gray did not apply to the branches’ makeup, which were largely mirror images of one another:
+
+<p align="center">
+  <img src="IMAGES/Age Breakdown _ Branch 1 to 4.png" width="750">
+</p>
+
+*A note here, to bring full circle an earlier discussion — from the section about violations in the dataset’s business logic — about records that had to be excluded from certain analyses because their respective `RegistrationDate`s and `BirthYear`s were, in conjunction with one another, either illogical or impossible: These records can be see reflected — in the charts above and in a discussion below about patrons’ lengths of membership — by the category labeled “Invalid.”*
+
+​*Note also that this is distinct from another category seen above, “Unknown,” in which the `BirthYear` was either not listed, listed as 1800 or 1900, or listed as -1. The “Invalid” category, by comparison, describes those records in which it is impossible to determine whether it is the `RegistrationDate` or the `BirthYear` that is in error (only that both cannot be correct).*
+
+The charts above also hint at another disappointing bit of statistical monotony, i.e., that all of the branches’ overall membership totals are within 150 patrons of one another. (3658, 3794, 3733, and 3700 at Branches 1 through 4, respectively.)
+
+Unfortunately, we also see similarly uninteresting results across the branches when we subdivide our patrons into groups according to length of library membership:
+
+<p align="center">
+  <img src="IMAGES/Branch Populations according to Time of Library Membership.png" width="750">
+</p>
+
+
+Other checkout-behavior analyses garnered similarly beige results. A study of overdue books finds the habit largely consisent across branches — both in the per-branch percentage of books returned late, as well as in the per-branch average of days late — as well as across genres. (Sadly, no intriguiging genre-specific factoids were to be had, say, about Travel books being more likely to come back late after accompanying their borrowers on their vacations, for example.)
+
+Combining these various elements only produces further undistinguished findings — i.e., no particular age group more or less likely to return books late, nor any such peaks or valleys among patrons as classified by length of library membership.
+
+​Likewise, an investigation into which genre is favored by each age group produced equally homogenous results (the undisputed favorite in every age range, from 10 & Under to Over 80: Mystery/Thriller), highlighting yet another area in which the synthetic-data design has divvied the population up into all-but-equivalent subdivisions.
+
+​Similarly oversmooth findings result from an analysis of branches’ respective inventories in terms of title age. (Because the dataset does not contain information about titles’ purchase dates, here we are treating publication date as an equivalent.) The chart below presents an almost comically robotized breakdown in inventories by title-age range:
+
+<p align="center">
+  <img src="IMAGES/Inventory Breakdown by Title Age per Branch.png" width="750">
+</p>
+
+These, and all of the disappointingly uniform results cataloged here, only serve to remind us of how unpredictable and unruly real-life human behavior really is: There’s nothing like a batch of eerily consistent data to immediately trigger a suspicious response. (“Wait, *that* can’t be right….”)
+
+</details>
 
 ### Next steps
 
