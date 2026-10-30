@@ -14,8 +14,6 @@ The analysis would eventually concentrate on four main inventory questions:
 -  Which titles were candidates for weeding (i.e., removal)? 
 -  Where might transfers better align branches’ inventory with demand?
 
-*These findings, of course, are based on synthetic data and are therefore greatly proscribed: In the real-world analog to this analysis, many additional factors would need to be weighed. The data furthermore suffer from limitations — and, in places, flaws — which inhibit certain analyses; these systemic issues will be addressed later. (See “Limitations,” below.)*
-
 ### Data creation
 
 I enlisted Google Gemini to write a Python script to generate the following CSV files:​
@@ -157,8 +155,7 @@ I then applied the following query:
 ```sql
 UPDATE titles
 SET TitleName_Standardized =
-    CASE
-        WHEN TitleName_Standardized NOT LIKE '%[Id%'
+    CASE WHEN TitleName_Standardized NOT LIKE '%[Id%'
         THEN
              CONCAT(
              SUBSTRING(
@@ -166,15 +163,11 @@ SET TitleName_Standardized =
                 5
                 -- 5 = starting postition of the title after 'The '
                 ),
-             CASE
-                WHEN BINARY TitleName_Standardized = BINARY LOWER(TitleName_Standardized)
-                THEN
-                   ', the'
+             CASE WHEN BINARY TitleName_Standardized = BINARY LOWER(TitleName_Standardized)
+                THEN ', the'
                 WHEN BINARY TitleName_Standardized = BINARY UPPER(TitleName_Standardized)
-                THEN
-                   ', THE'
-                ELSE                  
-                   ', The'
+                THEN ', THE'
+                ELSE ', The'
              END
 -- This is to keep consistent those instances of titles in either all caps or in all lowercase
              )
@@ -188,15 +181,11 @@ SET TitleName_Standardized =
         -- 16 = sum of 4 (length of 'The ') + 1 (space before ID) + 11 (length of '[Id: XXXXX]')
         -- Remove both from the original length to get the title length
                 ),
-             CASE
-                WHEN BINARY TitleName_Standardized = BINARY LOWER(TitleName_Standardized)
-                THEN
-                   ', the '
+             CASE WHEN BINARY TitleName_Standardized = BINARY LOWER(TitleName_Standardized)
+                THEN ', the '
                 WHEN BINARY TitleName_Standardized = BINARY UPPER(TitleName_Standardized)
-                THEN
-                   ', THE '
-                ELSE                  
-                   ', The '
+                THEN ', THE '
+                ELSE ', The '
              END
 -- This is to keep consistent those instances of titles in either all caps or in all lowercase
              ,
@@ -351,14 +340,11 @@ I applied three criteria to determine titles that a branch might want to conside
 
 <details>
 
-<summary>Full “additional purchase” SQL
+<summary>Full “additional purchase” SQL</summary>
 
-</summary>
+<p>
 
-<br>
 As noted — minus any real-world purchasing rules that would guide us in an actual library system — here we will use arbitrarily selected criteria: A title in need of purchase must have:
-
-<!-- -->
 
 -  a turnover ratio (i.e., checkouts / branch inventory) of at least 10.0;
 -  a hold request in the past three months; and
@@ -706,7 +692,7 @@ The analyses here, then, were only a very small handful of possible approaches t
 
 ### What I’ve learned
 
-This report has chronicled at length the potential hazards of employing synthetic data for the purposes to which they have been put here. Also noted has been the valuable lesson that an open-ended analytical exploration, by its nature — in fact, by its very name — runs the risk of lacking a clear endpoint: The author comes away from this endeavor with a greater understanding of the importance of *some* guardrails, even within a looser framework.​
+This report has chronicled at length the potential hazards of employing synthetic data for the purposes to which they have been put here. I also learned the valuable lesson that an open-ended analytical exploration, by its nature — in fact, by its very name — runs the risk of lacking a clear endpoint: The author comes away from this endeavor with a greater understanding of the importance of *some* guardrails, even within a looser framework.​
 
 I was also grateful for the opportunity to apply certain business-rule validations to the data at hand: I gained a better appreciation for the sort of causal relationships that can exist between fields — i.e., how data can be ostensibly “clean” when evaluated solely against itself, but potentially problematic when interacting illogically with other, related data (e.g., patrons returning books before checking them out or — in a far more extreme example — obtaining library cards literally before they were born).
 
