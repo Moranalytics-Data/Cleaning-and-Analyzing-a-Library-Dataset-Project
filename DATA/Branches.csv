@@ -1,0 +1,5 @@
+BranchID,BranchName,NeighborhoodType,CommunityProfile,OpenedYear,PatronCapacity,InventoryCapacity
+1,Downtown,Urban,System Service Node Location,1994,5456,18000
+2,Riverside,Residential,System Service Node Location,2015,3772,14000
+3,College District,College,System Service Node Location,2015,4178,16000
+4,North Hills,Suburban,System Service Node Location,2001,1479,12000
