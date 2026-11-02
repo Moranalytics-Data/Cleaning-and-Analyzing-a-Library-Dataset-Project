@@ -5,6 +5,10 @@ This project concerns two years of synthetic data for a fictious four-branch lib
 
 I used Excel and MySQL for the data cleaning, MySQL for the analysis, and PowerBI for an interactive report that allows users to explore checkout behavior and branch-level inventory issues.
 
+<p align="center">
+  <img src="IMAGES/main page screenshot.png" width="1000">
+</p>
+
 ### Findings
 
 The analysis would eventually concentrate on four main inventory questions: 
@@ -29,6 +33,10 @@ I enlisted Google Gemini to write a Python script to generate the following CSV 
 This dataset — based on a series of preliminary discussions with Gemini about the underlying structures that would guide how its components should behave and interact — would initially prove an (admittedly simplified, but) satisfactorily plausible facsimile of a small, four-branch library system. (The **Checkouts** dataset, for example, contains over 250,000 individual records for the two-year time period in question.)​
 
 However, while this synthetic data offered ample opportunity to practice data cleaning, relational analysis, and exploratory SQL, deeper dives would reveal irregularities — or, in some cases, *overly* regular behavior — that would curtail certain analytical avenues.
+
+<p align="center">
+  <img src="IMAGES/branch page screenshot.png" width="1000">
+</p>
 
 ### Data cleaning
 
