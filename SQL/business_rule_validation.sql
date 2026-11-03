@@ -21,8 +21,7 @@ WHERE YEAR(RegistrationDate) < BirthYear;
 SELECT
 	COUNT(patronID)
 FROM patrons
-WHERE YEAR(RegistrationDate) <= BirthYear + 4
-;
+WHERE YEAR(RegistrationDate) <= BirthYear + 4;
 
 -- ReturnDate preceding CheckoutDate in Checkouts table:
 
@@ -81,9 +80,9 @@ SELECT
 FROM inventory_transfer
 WHERE Quantity <= 0;   
    
--- The following adapts a previous query to make a similar check whether instances of
--- a transfer quantity being listed as <= 0 have any correspondence with actual
--- transers of the same title within 31 days.
+-- The following adapts a previous query (see above) to make a similar check whether
+-- instances of a transfer quantity being listed as <= 0 have any correspondence with
+-- actual transers of the same title within 31 days.
 
 WITH glitch_transfers AS (
     SELECT *
