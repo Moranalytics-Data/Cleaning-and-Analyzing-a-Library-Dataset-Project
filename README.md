@@ -421,7 +421,7 @@ Again, an arbitrary standard was applied here — i.e., any branch with more tha
 
 <br>
 
-The following query determines those titles at each branch that (a) have not been checked out in the past 18 months and (b) have more than two copies in inventory.
+The following query determines those titles at each branch that (a) have not been checked out in the past 18 months and (b) have at least two copies in inventory.
 
 ```sql
 SELECT
