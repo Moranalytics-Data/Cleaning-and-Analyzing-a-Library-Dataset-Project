@@ -1,7 +1,7 @@
 /*
 John G. Moran
 "Cleaning and Analyzing a Library Dataset"
-This project concerns two years of synthetic data for a fictious four-branch library system; 
+This project concerns two years of synthetic data for a fictitious four-branch library system; 
 it investigates the quality of that data, validates business rules, and 
 identifies potential opportunities to improve inventory allocation across the system.
 */
