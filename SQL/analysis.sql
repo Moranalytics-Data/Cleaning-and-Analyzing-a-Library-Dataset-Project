@@ -118,7 +118,7 @@ AND NOT EXISTS (
 ORDER BY ctir.check_to_inv_rat DESC;
 
 -- The following query was written to determine, for each branch,
--- those titles with over two copies in inventory that had not been
+-- those titles with at least two copies in inventory that had not been
 -- checked out in the previous eighteen months:
 
 SELECT
