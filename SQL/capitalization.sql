@@ -19,8 +19,8 @@ SET TitleName_Standardized = TitleName;
 
 -- This query, below, was written to either relocate an introductory "The" to the end of the title,
 -- after a comma; or relocate it to the end of the title but *before* the "[Id: XXXXX]" tag
--- (in those instances in which an existing title included such a tag). The query is also 
--- designed to maintain whatever existing form of capitalization the title had originally.
+-- (in those instances in which a title included such a tag). The query is also designed
+-- to maintain whatever existing form of capitalization the title had originally.
 
 UPDATE titles
 SET	TitleName_Standardized = 
@@ -68,7 +68,7 @@ SET	TitleName_Standardized =
 			END
 WHERE TitleName_Standardized LIKE 'The %';
 
--- This query was designed to fix those existing instances in which the "[Id: XXXXX]" tag
+-- This query, below, was designed to fix those existing instances in which the "[Id: XXXXX]" tag
 -- separated the title and its introductory article (e.g., "Big Sleep [Id: XXXXX], The").
 -- This query converts the example into "Big Sleep, The [Id: XXXXX]".
 
