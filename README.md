@@ -4,9 +4,9 @@ This project concerns two years of synthetic data for a fictious four-branch lib
 - [Tools used](#tools-used)
 - [Findings](#findings)
 - [Data creation](#data-creation)
-- [Date cleaning](#data-cleaning)
+- [Data cleaning](#data-cleaning)
 - [Business rule validation](#business-rule-validation)
-- [Inventory Analysis / Recommendations](#inventory-analysis--recommendations---four-exploratory-questions)
+- [Inventory analysis / Recommendations](#inventory-analysis--recommendations---four-exploratory-questions)
 - [Limitations](#limitations)
 - [Next steps](#next-steps)
 
