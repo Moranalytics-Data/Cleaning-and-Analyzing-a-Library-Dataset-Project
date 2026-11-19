@@ -1,6 +1,16 @@
 # Cleaning and Analyzing a Library Dataset Project
 This project concerns two years of synthetic data for a fictious four-branch library system; it investigates the quality of that data, validates business rules, and identifies potential opportunities to improve inventory allocation across the system.
 
+- [Tools used](#tools-used)
+- [Findings](#findings)
+- [Data creation](#data-creation)
+- [Date cleaning](#data-cleaning)
+- [Business rule validation](#business-rule-validation)
+- [Inventory Analysis / Recommendations](#inventory-analysis--recommendations--four-explanatory-questions)
+- [Limitations](#limitations)
+- [Next steps](#next-steps)
+
+
 ### Tools used
 
 I used Excel and MySQL for the data cleaning, MySQL for the analysis, and PowerBI for an interactive report that allows users to explore checkout behavior and branch-level inventory issues.
