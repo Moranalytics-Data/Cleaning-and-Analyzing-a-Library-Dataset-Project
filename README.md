@@ -10,7 +10,6 @@ This project concerns two years of synthetic data for a fictious four-branch lib
 - [Limitations](#limitations)
 - [Next steps](#next-steps)
 
-
 ### Tools used
 
 I used Excel and MySQL for the data cleaning, MySQL for the analysis, and PowerBI for an interactive report that allows users to explore checkout behavior and branch-level inventory issues.
